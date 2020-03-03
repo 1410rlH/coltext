@@ -128,9 +128,7 @@ enum class Effect {
     cyan_fg    = 36,
     white_fg   = 37,
 
-#ifdef BLUSH_ANSI_RGB
     rgb_fg     = 38,
-#endif
     default_fg = 39,
 
 /* Background color */
@@ -143,9 +141,7 @@ enum class Effect {
     cyan_bg    = 46,
     white_bg   = 47,
 
-#ifdef BLUSH_ANSI_RGB
     rgb_bg     = 48,
-#endif
     default_bg = 49,
 
 /* Frame styles */
