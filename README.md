@@ -1,8 +1,10 @@
-[Coltext](https://github.com/1410rlH/coltext) is an open-source header-only C++ library for applying colors and styles to strings in linux terminals.
+# Coltext
 
-It introduces a new syntax for in-string ANSI effects (styles, background and foreground colors) parsing. With a few simple rules you won't need to care about remembering escape codes or resetting streams.
+[Coltext](https://github.com/1410rlH/coltext) is an open-source header-only C++ library for applying colors and styles to strings in terminals.
 
-# Table of Contents
+It introduces a new syntax for in-string ANSI effects (styles, background and foreground colors) parsing. With a few simple rules you won't need to care about remembering escape codes or resetting streams!
+
+## Table of Contents
 
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -10,9 +12,12 @@ It introduces a new syntax for in-string ANSI effects (styles, background and fo
     - [Linux](#linux)
 - [How to use](#how-to-use)
   - [Syntax](#syntax)
+    - [Colors](#colors)
+    - [Styles](#styles)
+    - [Effect scope](#effect-scope)
+    - [Escape symbols](#escape-symbols)
   - [Casting](#casting)
 - [Running the tests](#running-the-tests)
-- [Contributing](#contributing)
 - [Versioning](#versioning)
 - [Authors](#authors)
 - [License](#license)
@@ -30,13 +35,44 @@ There is currently only Linux terminals support. But we plan to make Coltext cro
 
 #### Linux
 
-1. Download [latest release]() or just `coltext.hpp` file
-2. Add it to the folder where your code lies 
+1. Download [latest release](https://github.com/1410rlH/coltext/releases/latest) or just `coltext.hpp` file.
+2. Add it to the folder where your code lies.
 3. Add `#include "coltext.hpp"` to your C++ file.
 
 ## How to use
 
+In order to use Coltext features you need to acquire syntax of Coltext and cast to its class.
+
 ### Syntax
+
+Effects should start from a `#` special symbol, followed by effect's keyword.
+
+> Note: if keyword is wrong then Coltext threats it as plain text. **NO ERROR TROWN EVER**.
+
+#### Colors
+
+The colors are standard 16 ANSI colors (8 colors + their bright versions)
+
+| color |      keywords      |
+|-------|--------------------|
+|black  | `"black"`,   `"k"` |
+|red    | `"red"`,     `"r"` |
+|green  | `"green"`,   `"g"` |
+|yellow | `"yellow"`,  `"y"` |
+|blue   | `"blue"`,    `"b"` |
+|cyan   | `"cyan"`,    `"c"` |
+|magenta| `"magenta"`, `"m"` |
+|white  | `"white"`,   `"w"` |
+
+Background colors keywords start from big letter. (Example: `"Red"` and `"R"`)
+
+Their bright versions are accessed by adding `"bright_"` to long keyword or `"b"` to short one. (Example: `"bright_red"` and `"br"`, or `"bright_Red"` and `"bR"` for background)
+
+> Note: acronyms for colors come from [CMYK](https://en.wikipedia.org/wiki/CMYK_color_model) and [RGB](https://en.wikipedia.org/wiki/RGB_color_model) color models.
+
+#### Styles
+
+#### Effect scope
 
 `"#effect_name(text)"`
 
@@ -46,9 +82,8 @@ There is currently only Linux terminals support. But we plan to make Coltext cro
 
 `<style_name> next_word`
 
-|     Name    |     Keywords     |               Commentary               | 
-|:-----------:|:----------------:|:--------------------------------------:|
-|   black_fg  | `"black"`, `"k"` | `"k"` is acronym for black from [CMYK](https://en.wikipedia.org/wiki/CMYK_color_model) |
+#### Escape symbols
+
 
 ### Casting
 
@@ -59,44 +94,32 @@ There are currently 3 ways of doing it:
 By constructor:
 
 ~~~c++
-std::string hello = "Hello, World!";
-Coltext ctxt(hello);
+Coltext ctxt("<b>(Hello, World!)\n"); // ctxt(std::string &) works as well
 ~~~
 
 By dynamic cast:
 
 ~~~c++
-std::string hello = "Hello, World!";
-std::cout << (Coltext) hello << "\n";
-~~~
-
-Or symply
-
-~~~c++
-std::cout << (Coltext) "Hello, World!\n";
+std::cout << (Coltext) "<b>(Hello, World!)\n";
 ~~~
 
 By literal:
 
 ~~~c++
-std::cout << "Hello, World!\n"_col;
+std::cout << "<b>(Hello, World!)\n"_col;
 ~~~
 
 ## Running the tests
 
-## Contributing
-
-Please read [CONTRIBUTING]() for details on our code of conduct and the process for submitting pull requests to us.
+Compile and run `tests.cpp` file.
 
 ## Versioning
 
-We use [SemVer](https://semver.org/) for versioning. For the versions available, see the [releases on this repository]().
+We use [SemVer](https://semver.org/) for versioning. For the versions available, see the [releases on this repository](https://github.com/1410rlH/coltext/releases).
 
 ## Authors
 
 - **Earl H.** - *Initial work* - [1410rlH](https://github.com/1410rlH)
-
-See also the list of [contributors]() who participated in this project.
 
 ## License
 
