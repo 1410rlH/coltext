@@ -21,6 +21,7 @@
 
 
 #include <iostream>
+#include <string>
 
 #include <list>
 #include <stack>
@@ -51,15 +52,15 @@ public:
 private:
     struct Token {
         enum class Type {
-            text,       // plain text
-            effect,     // #effect(
-            effect_stop // )#
+            text,
+            effect,
+            effect_stop
         };
 
         Type type;
         std::string value;
     };
-    std::list<Token> tokenize(const char *str, size_t len) const;
+    std::list<Token> tokenize(const char *str, size_t len) const noexcept;
 
     struct Node {
         enum class Type {
@@ -70,7 +71,7 @@ private:
         Type type;
         std::string value;
     };
-    std::list<Node> parse(const std::list<Token> &tokens) const;
+    std::list<Node> parse(const std::list<Token> &tokens) const noexcept;
 
 
     std::string str;
@@ -302,7 +303,7 @@ Coltext literals::operator"" _col(const char *str, size_t len)
 }
 
 std::list<Coltext::Token> 
-Coltext::tokenize (const char *str, size_t len) const
+Coltext::tokenize (const char *str, size_t len) const noexcept
 {
     std::list<Token> tokens;
     
@@ -422,7 +423,7 @@ Coltext::tokenize (const char *str, size_t len) const
 }
 
 std::list<Coltext::Node> 
-Coltext::parse (const std::list<Coltext::Token> &tokens) const
+Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
 {
     using namespace ansi;
 
