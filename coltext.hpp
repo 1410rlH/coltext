@@ -21,6 +21,7 @@
 
 
 #include <iostream>
+#include <string>
 
 #include <list>
 #include <stack>
@@ -51,15 +52,15 @@ public:
 private:
     struct Token {
         enum class Type {
-            text,       // plain text
-            effect,     // #effect(
-            effect_stop // )#
+            text,
+            effect,
+            effect_stop
         };
 
         Type type;
         std::string value;
     };
-    std::list<Token> tokenize(const char *str, size_t len) const;
+    std::list<Token> tokenize(const char *str, size_t len) const noexcept;
 
     struct Node {
         enum class Type {
@@ -70,7 +71,7 @@ private:
         Type type;
         std::string value;
     };
-    std::list<Node> parse(const std::list<Token> &tokens) const;
+    std::list<Node> parse(const std::list<Token> &tokens) const noexcept;
 
 
     std::string str;
@@ -128,9 +129,7 @@ enum class Effect {
     cyan_fg    = 36,
     white_fg   = 37,
 
-#ifdef BLUSH_ANSI_RGB
     rgb_fg     = 38,
-#endif
     default_fg = 39,
 
 /* Background color */
@@ -143,9 +142,7 @@ enum class Effect {
     cyan_bg    = 46,
     white_bg   = 47,
 
-#ifdef BLUSH_ANSI_RGB
     rgb_bg     = 48,
-#endif
     default_bg = 49,
 
 /* Frame styles */
@@ -200,14 +197,16 @@ std::unordered_map<std::string, Effect> name_to_effect = {
     {"faint",     Effect::faint},     {"<f>", Effect::faint},
     {"italic",    Effect::italic},    {"<i>", Effect::italic},
     {"underline", Effect::underline}, {"<u>", Effect::underline},
-
-    // <s> and <del> are HTML tags. <c> is used to follow the pattern with first letter.
-    {"crossed", Effect::crossed}, {"<c>", Effect::crossed}, {"<s>", Effect::crossed}, {"<del>", Effect::crossed},
     
 /* Not frequently used functions are without acronyms. */
+    {"crossed", Effect::crossed},
+
     {"blink",   Effect::blink}, 
     {"reverse", Effect::reverse},
 
+    {"framed",    Effect::framed}, 
+    {"encircled", Effect::encircled},
+    {"overlined", Effect::overlined}, 
 
 /* RGB and CMYK used as acronyms for colors */
     {"black",   Effect::black_fg},   {"k", Effect::black_fg},
@@ -306,7 +305,7 @@ Coltext literals::operator"" _col(const char *str, size_t len)
 }
 
 std::list<Coltext::Token> 
-Coltext::tokenize (const char *str, size_t len) const
+Coltext::tokenize (const char *str, size_t len) const noexcept
 {
     std::list<Token> tokens;
     
@@ -322,19 +321,22 @@ Coltext::tokenize (const char *str, size_t len) const
         { 
         /* If parentheses are escaped,
            push them without slash */
-            ++i;
             buffer.push_back(str[i+1]);
+            ++i;
             continue;
         }
         else
         if (c == '#' || c == '<')
         {/* Coltext tags found */
             
-            tokens.push_back({ 
-                Token::Type::text, 
-                buffer
-            });
-            buffer.clear();
+            if (buffer.size() != 0) // Don't flush empty strings
+            {
+                tokens.push_back({ 
+                    Token::Type::text, 
+                    buffer
+                });
+                buffer.clear();
+            }
 
             do { buffer.push_back(str[i]); ++i; }
             while (
@@ -372,11 +374,14 @@ Coltext::tokenize (const char *str, size_t len) const
         {
             --wait_right_parenthesis;
 
-            tokens.push_back({ 
-                Token::Type::text, 
-                buffer
-            });
-            buffer.clear();
+            if (buffer.size() != 0) // In case of #r()
+            {
+                tokens.push_back({ 
+                    Token::Type::text, 
+                    buffer
+                });
+                buffer.clear();
+            }
 
             tokens.push_back({ 
                 Token::Type::effect_stop, 
@@ -426,7 +431,7 @@ Coltext::tokenize (const char *str, size_t len) const
 }
 
 std::list<Coltext::Node> 
-Coltext::parse (const std::list<Coltext::Token> &tokens) const
+Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
 {
     using namespace ansi;
 

@@ -14,7 +14,7 @@ void plain_text()
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test plain_text succeded\n\n";
+    std::cout << "[ #g OK ] Test plain_text succeded\n\n"_col;
 }
 
 void plain_text_with_parentheses()
@@ -27,7 +27,7 @@ void plain_text_with_parentheses()
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test plain_text_with_parentheses succeded!\n\n";
+    std::cout << "[ #g OK ] Test plain_text_with_parentheses succeded!\n\n"_col;
 }
 
 void standard_escapes()
@@ -40,7 +40,7 @@ void standard_escapes()
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test standard_escapes succeded\n\n";
+    std::cout << "[ #g OK ] Test standard_escapes succeded\n\n"_col;
 }
 
 void color_with_parenthese()
@@ -53,20 +53,20 @@ void color_with_parenthese()
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test color_with_parenthese succeded\n\n"; 
+    std::cout << "[ #g OK ] Test color_with_parenthese succeded\n\n"_col; 
 }
 
 void escaped_parenthese()
 {
     std::cout << "Starting escaped_parenthese test:\n";
 
-    std::string msg = "#r(Text\\(With parenthese escaped\\)) is ok!";
+    std::string msg = "#r(Text \\(With parenthese escaped\\)) is ok!";
     Coltext ctxt(msg);
 
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test escaped_parenthese succeded\n\n";
+    std::cout << "[ #g OK ] Test escaped_parenthese succeded\n\n"_col;
 }
 
 void escaped_right_parenthese()
@@ -79,7 +79,7 @@ void escaped_right_parenthese()
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test escaped_right_parenthese succeded\n\n";
+    std::cout << "[ #g OK ] Test escaped_right_parenthese succeded\n\n"_col;
 }
 
 void color_next_word() {
@@ -91,7 +91,7 @@ void color_next_word() {
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test color_next_word succeded\n\n"; 
+    std::cout << "[ #g OK ] Test color_next_word succeded\n\n"_col; 
 }
 
 void literal()
@@ -101,7 +101,7 @@ void literal()
     std::cout << "\t"  << "\"Text colored by #b(literal)\"_col" << "\n";
     std::cout << "\t" << "Text colored by #b(literal)"_col << "\n";
 
-    std::cout << "[ OK ] Test literal succeded\n\n"; 
+    std::cout << "[ #g OK ] Test literal succeded\n\n"_col; 
 }
 
 void bg_color()
@@ -114,7 +114,7 @@ void bg_color()
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test bg_color succeded\n\n"; 
+    std::cout << "[ #g OK ] Test bg_color succeded\n\n"_col; 
 }
 
 void styles() {
@@ -129,7 +129,7 @@ void styles() {
     std::cout << "\t"  << msg2 << "\n";
     std::cout << "\t"  << (Coltext) msg2 << "\n";
 
-    std::cout << "[ OK ] Test styles succeded\n\n"; 
+    std::cout << "[ #g OK ] Test styles succeded\n\n"_col; 
 }
 
 void sequence()
@@ -142,7 +142,7 @@ void sequence()
     std::cout << "\t"  << msg << "\n";
     std::cout << "\t"  << ctxt << "\n";
 
-    std::cout << "[ OK ] Test sequence succeded\n\n"; 
+    std::cout << "[ #g OK ] Test sequence succeded\n\n"_col; 
 }
 
 void get_from_cin()
@@ -153,7 +153,7 @@ void get_from_cin()
     std::cout << "\t"; std::cin >> ctxt;
     std::cout << "\t" << ctxt << "\n";
 
-    std::cout << "[ OK ] Test get_from_cin succeded\n\n"; 
+    std::cout << "[ #g OK ] Test get_from_cin succeded\n\n"_col; 
 }
 
 void all_colors()
