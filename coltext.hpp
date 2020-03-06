@@ -205,6 +205,9 @@ std::unordered_map<std::string, Effect> name_to_effect = {
     {"blink",   Effect::blink}, 
     {"reverse", Effect::reverse},
 
+    {"framed",    Effect::framed}, 
+    {"encircled", Effect::encircled},
+    {"overlined", Effect::overlined}, 
 
 /* RGB and CMYK used as acronyms for colors */
     {"black",   Effect::black_fg},   {"k", Effect::black_fg},
@@ -319,19 +322,22 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
         { 
         /* If parentheses are escaped,
            push them without slash */
-            ++i;
             buffer.push_back(str[i+1]);
+            ++i;
             continue;
         }
         else
         if (c == '#' || c == '<')
         {/* Coltext tags found */
             
-            tokens.push_back({ 
-                Token::Type::text, 
-                buffer
-            });
-            buffer.clear();
+            if (buffer.size() != 0) // Don't flush empty strings
+            {
+                tokens.push_back({ 
+                    Token::Type::text, 
+                    buffer
+                });
+                buffer.clear();
+            }
 
             do { buffer.push_back(str[i]); ++i; }
             while (
@@ -369,11 +375,14 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
         {
             --wait_right_parenthesis;
 
-            tokens.push_back({ 
-                Token::Type::text, 
-                buffer
-            });
-            buffer.clear();
+            if (buffer.size() != 0) // In case of #r()
+            {
+                tokens.push_back({ 
+                    Token::Type::text, 
+                    buffer
+                });
+                buffer.clear();
+            }
 
             tokens.push_back({ 
                 Token::Type::effect_stop, 

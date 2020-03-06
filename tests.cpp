@@ -60,7 +60,7 @@ void escaped_parenthese()
 {
     std::cout << "Starting escaped_parenthese test:\n";
 
-    std::string msg = "#r(Text\\(With parenthese escaped\\)) is ok!";
+    std::string msg = "#r(Text \\(With parenthese escaped\\)) is ok!";
     Coltext ctxt(msg);
 
     std::cout << "\t"  << msg << "\n";
