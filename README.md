@@ -6,22 +6,24 @@ It introduces a new syntax for in-string ANSI effects (styles, background and fo
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installing](#installing)
-    - [Linux](#linux)
-- [How to use](#how-to-use)
-  - [Syntax](#syntax)
-    - [Colors](#colors)
-    - [Styles](#styles)
-    - [Effect scope](#effect-scope)
-    - [Escape symbols](#escape-symbols)
-  - [Casting](#casting)
-- [Running the tests](#running-the-tests)
-- [Versioning](#versioning)
-- [Authors](#authors)
-- [License](#license)
-- [Acknowledgments](#acknowledgments)
+- [Coltext](#coltext)
+  - [Table of Contents](#table-of-contents)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installing](#installing)
+      - [Linux](#linux)
+  - [How to use](#how-to-use)
+    - [Syntax](#syntax)
+      - [Colors](#colors)
+      - [Styles](#styles)
+      - [Effect scope](#effect-scope)
+      - [Escape symbol](#escape-symbol)
+    - [Casting](#casting)
+  - [Running the tests](#running-the-tests)
+  - [Versioning](#versioning)
+  - [Authors](#authors)
+  - [License](#license)
+  - [Acknowledgments](#acknowledgments)
 
 ## Getting Started
 
@@ -51,7 +53,8 @@ Effects should start from a `#` special symbol, followed by effect's keyword.
 
 #### Colors
 
-The colors are standard 16 ANSI colors (8 colors + their bright versions)
+The colors are standard 16 ANSI colors (8 colors + their bright versions).
+How colors look (and whether they are supported) is up to your terminal specification and settings.
 
 | color |      keywords      |
 |-------|--------------------|
@@ -66,48 +69,89 @@ The colors are standard 16 ANSI colors (8 colors + their bright versions)
 
 Background colors keywords start from big letter. (Example: `"Red"` and `"R"`)
 
-Their bright versions are accessed by adding `"bright_"` to long keyword or `"b"` to short one. (Example: `"bright_red"` and `"br"`, or `"bright_Red"` and `"bR"` for background)
+Their bright versions are accessed by adding `"bright_"` to long keyword or `"b"` to short one.
+(Example: `"bright_red"` and `"br"`, or `"bright_Red"` and `"bR"` for background)
 
 > Note: acronyms for colors come from [CMYK](https://en.wikipedia.org/wiki/CMYK_color_model) and [RGB](https://en.wikipedia.org/wiki/RGB_color_model) color models.
 
+CSS-like coloring (`#ffffff`) is currently not supported by Coltext.
+
 #### Styles
+
+Widly supported styles:
+
+|  style  |         keywords       |
+|---------|------------------------|
+|bold     | `"bold"`,      `"<b>"` |
+|faint    | `"faint"`,     `"<f>"` |
+|italic   | `"italic"`,    `"<i>"` |
+|underline| `"underline"`, `"<u>"` |
+
+> Note: `#` before `<` is optional. `#<b>` is equivalent to `<b>`.
+
+Closing styles by `<\>` is currently not supported in Coltext.
+See [effect scope](#effect-scope).
+
+Not widely supported or not frequently used styles:
+
+|  style  |    keywords   |                commentary               |
+|---------|---------------|-----------------------------------------|
+|crossed  | `"crossed"`   | Strikethrough text                      |
+|blink    | `"blink"`     | Text starts blinking (slowly)           |
+|reverse  | `"reverse"`   | Reverse background and foreground color |
+|framed   | `"framed"`    | Not widely supported                    |
+|encircled| `"encircled"` | Not widely supported                    |
+|overlined| `"overlined"` | Not widely supported                    |
+
+> Note: some of them will work in your terminal, some won't. Deal with it.
 
 #### Effect scope
 
-`"#effect_name(text)"`
+Effect scope is controled by 2 ways:
 
-`"#effect_name next_word"`
+1. Use parentheses to get as much as you want. (Example: `#g(text in green) and not in green`)
+2. Use space to get next word. (Example: `#r red and not_red`)
 
-`<style_name>() // Currently <\style_name> is not supported`
+#### Escape symbol
 
-`<style_name> next_word`
+There are only 4 symbols in Coltext you may want to escape: `#`, `(`, `)` and `<`.
 
-#### Escape symbols
+To escape these symbols use `\\`.
 
+> Note: actualy you can leave `(` without the escape symbol. It's just made for symmetry.
+
+Examples:
+
+```c++
+  std::cout
+    << "\\#red makes text red\n"_col
+    << "\\<bold> makes text bold\n"_col
+    << "I love green parentheses! #g( \\(\\) )"_col;
+```
 
 ### Casting
 
-In order to use features provided by Coltext, you MUST convert `std::string` to `Coltext` class.
+In order to use features provided by Coltext, you **MUST** convert `std::string` to `Coltext` class.
 
 There are currently 3 ways of doing it:
 
 By constructor:
 
-~~~c++
-Coltext ctxt("<b>(Hello, World!)\n"); // ctxt(std::string &) works as well
-~~~
+```c++
+Coltext ctxt("<b>(Hello, World!)\n");
+```
 
 By dynamic cast:
 
-~~~c++
+```c++
 std::cout << (Coltext) "<b>(Hello, World!)\n";
-~~~
+```
 
 By literal:
 
-~~~c++
+```c++
 std::cout << "<b>(Hello, World!)\n"_col;
-~~~
+```
 
 ## Running the tests
 
@@ -127,8 +171,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## Acknowledgments
 
+- C++ for the difficulties of coloring text
 - CSS for `'#'` special symbol
 - HTML for style tags
 - [Ikalnytskyi/termcolor](https://github.com/ikalnytskyi/termcolor) for initial idea
-- C++ for the difficulties of coloring text  
-
