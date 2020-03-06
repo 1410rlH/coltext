@@ -197,11 +197,10 @@ std::unordered_map<std::string, Effect> name_to_effect = {
     {"faint",     Effect::faint},     {"<f>", Effect::faint},
     {"italic",    Effect::italic},    {"<i>", Effect::italic},
     {"underline", Effect::underline}, {"<u>", Effect::underline},
-
-    // <s> and <del> are HTML tags. <c> is used to follow the pattern with first letter.
-    {"crossed", Effect::crossed}, {"<c>", Effect::crossed}, {"<s>", Effect::crossed}, {"<del>", Effect::crossed},
     
 /* Not frequently used functions are without acronyms. */
+    {"crossed", Effect::crossed},
+
     {"blink",   Effect::blink}, 
     {"reverse", Effect::reverse},
 
