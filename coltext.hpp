@@ -60,18 +60,8 @@ private:
         Type type;
         std::string value;
     };
-    std::list<Token> tokenize(const char *str, size_t len) const noexcept;
-
-    struct Node {
-        enum class Type {
-            text,
-            effect
-        };
-
-        Type type;
-        std::string value;
-    };
-    std::list<Node> parse(const std::list<Token> &tokens) const noexcept;
+    std::list<Token> tokenize(const char *str, size_t len) const noexcept; 
+    std::list<Token> & apply_effects (std::list<Token> &tokens) const noexcept;
 
 
     std::string str;
@@ -180,12 +170,12 @@ std::unordered_map<Effect, Effect> effect_off = {
     {Effect::bold, Effect::normal_itensity}, {Effect::faint, Effect::normal_itensity},
      
     {Effect::underline, Effect::underline_off}, {Effect::double_underline, Effect::underline_off},
-    {Effect::framed, Effect::framed_off}, {Effect::encircled, Effect::framed_off},
+    {Effect::framed,    Effect::framed_off},    {Effect::encircled,        Effect::framed_off},
     
-    {Effect::italic, Effect::italic_off}, 
-    {Effect::blink, Effect::blink_off},
-    {Effect::reverse, Effect::reverse_off},
-    {Effect::crossed, Effect::crossed_off},
+    {Effect::italic,    Effect::italic_off}, 
+    {Effect::blink,     Effect::blink_off},
+    {Effect::reverse,   Effect::reverse_off},
+    {Effect::crossed,   Effect::crossed_off},
     {Effect::overlined, Effect::overlined_off}
 };
 
@@ -197,6 +187,8 @@ std::unordered_map<std::string, Effect> name_to_effect = {
     {"faint",     Effect::faint},     {"<f>", Effect::faint},
     {"italic",    Effect::italic},    {"<i>", Effect::italic},
     {"underline", Effect::underline}, {"<u>", Effect::underline},
+
+    {"double_underline", Effect::double_underline}, {"<uu>", Effect::double_underline},
     
 /* Not frequently used functions are without acronyms. */
     {"crossed", Effect::crossed},
@@ -255,41 +247,27 @@ inline Coltext::Coltext()
 {};
 
 inline Coltext::Coltext(const std::string &str) 
-{
-    this->str = str;
-    auto tokens = this->tokenize(str.c_str(), str.size());
-    auto nodes = this->parse(tokens);
-    for (const auto &node : nodes) this->colored_str += node.value;
-};
+: Coltext::Coltext(str.c_str(), str.size())
+{};
 
 inline Coltext::Coltext(const char *str, size_t len)
 {
     this->str = std::string(str, len);
     auto tokens = this->tokenize(str, len);
-    auto nodes = this->parse(tokens);
-    for (const auto &node : nodes) this->colored_str += node.value;
+    this->apply_effects(tokens);
+    for (const auto &tkn : tokens) this->colored_str += tkn.value;
 }
 
 Coltext & Coltext::operator+= (const Coltext &rhs)
 {
-    this->str += rhs.str;
-    auto tokens = this->tokenize(this->str.c_str(), this->str.size());
-    auto nodes = this->parse(tokens);
-
-    this->colored_str = "";
-    for (const auto &node : nodes) this->colored_str += node.value;
-
-    return *this;
+    return *this = Coltext(this->str + rhs.str);
 }
 
 inline std::istream & operator>> (std::istream &is, Coltext &ctxt)
 {
     std::string str; std::getline(is, str);
 
-    ctxt.str = str;
-    auto tokens = ctxt.tokenize(str.c_str(), str.size());
-    auto nodes = ctxt.parse(tokens);
-    for (const auto &node : nodes) ctxt.colored_str += node.value;
+    ctxt = Coltext(str);
     
     return is;
 }
@@ -430,33 +408,27 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
     return tokens;
 }
 
-std::list<Coltext::Node> 
-Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
+std::list<Coltext::Token> & 
+Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
 {
     using namespace ansi;
 
-    std::list<Node> nodes;
     std::stack<Effect> effects;
 
     std::stack<Effect> last_bg({Effect::default_bg});
     std::stack<Effect> last_fg({Effect::default_fg});
 
     bool ignore_stop = false;
-    for (const auto &tkn : tokens)
+
+    auto tkn = tokens.begin();
+    while (tkn != tokens.end())
     {
-        if (tkn.type == Token::Type::text)
-        {
-            nodes.push_back({
-                Node::Type::text, 
-                tkn.value
-            });
-            continue;
-        }
+        if (tkn->type == Token::Type::text) { ++tkn; continue; }
         
         Effect e;
-        if (tkn.type == Token::Type::effect)
+        if (tkn->type == Token::Type::effect)
         {
-            std::string name = tkn.value;
+            std::string name = tkn->value;
             name.pop_back(); // Delete ' ' or '('
 
             if (name.at(0) == '#') name.erase(0, 1);
@@ -466,14 +438,13 @@ Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
             {
             /* If it's not a valid effect, 
                 we just leave it as text */
-                nodes.push_back({
-                    Node::Type::text, 
-                    tkn.value
-                });
+                tkn->type = Token::Type::text;
                 ignore_stop = true; 
-                continue;
+                ++tkn; continue;
             }
-            else e = it->second;  
+            else e = it->second;
+
+            tkn->value = name;
 
             effects.push(e);
             if ((e >= Effect::black_bg && e <= Effect::white_bg) ||
@@ -489,10 +460,11 @@ Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
             } 
         }
         else 
-        if (tkn.type == Token::Type::effect_stop)
+        if (tkn->type == Token::Type::effect_stop)
         {
             if (ignore_stop)
             {
+                tokens.erase(tkn++);
                 ignore_stop = false;
                 continue;
             }
@@ -519,12 +491,10 @@ Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
         // Create ANSI escape code from effect enum
         std::string escape_code = "\033[" + std::to_string((int)e) + "m";
 
-        nodes.push_back({
-            Node::Type::effect, 
-            escape_code
-        });
+        tkn->value = escape_code;
+        ++tkn; continue;
     }
-    return nodes;
+    return tokens;
 }
 
 #endif // COLTEXT_HPP
