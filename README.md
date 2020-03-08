@@ -86,6 +86,7 @@ Widly supported styles:
 |faint    | `"faint"`,     `"<f>"` |
 |italic   | `"italic"`,    `"<i>"` |
 |underline| `"underline"`, `"<u>"` |
+|double underline| `"double_underline"`, `"<uu>"` |
 
 > Note: `#` before `<` is optional. `#<b>` is equivalent to `<b>`.
 
