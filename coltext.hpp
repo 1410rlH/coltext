@@ -61,7 +61,7 @@ private:
         std::string value;
     };
     std::list<Token> tokenize(const char *str, size_t len) const noexcept; 
-    std::list<Token> & apply_effects (std::list<Token> &tokens) const noexcept;
+    void apply_effects (std::list<Token> &tokens) const noexcept;
 
 
     std::string str;
@@ -408,7 +408,7 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
     return tokens;
 }
 
-std::list<Coltext::Token> & 
+void
 Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
 {
     using namespace ansi;
@@ -494,7 +494,6 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
         tkn->value = escape_code;
         ++tkn; continue;
     }
-    return tokens;
 }
 
 #endif // COLTEXT_HPP
