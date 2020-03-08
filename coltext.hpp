@@ -187,10 +187,10 @@ std::unordered_map<std::string, Effect> name_to_effect = {
     {"faint",     Effect::faint},     {"<f>", Effect::faint},
     {"italic",    Effect::italic},    {"<i>", Effect::italic},
     {"underline", Effect::underline}, {"<u>", Effect::underline},
-
-    {"double_underline", Effect::double_underline}, {"<uu>", Effect::double_underline},
     
 /* Not frequently used functions are without acronyms. */
+    {"double_underline", Effect::double_underline},
+
     {"crossed", Effect::crossed},
 
     {"blink",   Effect::blink}, 
