@@ -17,7 +17,7 @@
 //
 
 #ifndef COLTEXT_HPP
-#define COLTEXT_HPP "1.0.0"
+#define COLTEXT_HPP "1.0.1"
 
 
 #include <iostream>
@@ -42,9 +42,8 @@ public:
     inline Coltext(const std::string &);
     inline Coltext(const char *, size_t );
 
+    Coltext   operator+  (const Coltext &);
     Coltext & operator+= (const Coltext &);
-    
-    friend inline Coltext & operator+  (const Coltext &, const Coltext &);
 
     friend inline std::istream & operator>> (std::istream &, Coltext &);
     friend inline std::ostream & operator<< (std::ostream &, const Coltext &);
@@ -258,9 +257,14 @@ inline Coltext::Coltext(const char *str, size_t len)
     for (const auto &tkn : tokens) this->colored_str += tkn.value;
 }
 
+Coltext Coltext::operator+ (const Coltext &rhs)
+{
+    return Coltext(this->str + rhs.str);
+}
+
 Coltext & Coltext::operator+= (const Coltext &rhs)
 {
-    return *this = Coltext(this->str + rhs.str);
+    return *this = *this + rhs;
 }
 
 inline std::istream & operator>> (std::istream &is, Coltext &ctxt)
