@@ -160,14 +160,14 @@ void all_colors()
 {
     std::cout
         << "Foreground colors:\n"
-        << "\t\\#k(black)   -> " << "#k(black)\n"_col
-        << "\t\\#r(red)     -> " << "#r(red)\n"_col
-        << "\t\\#g(green)   -> " << "#g(green)\n"_col
-        << "\t\\#y(yellow)  -> " << "#y(yellow)\n"_col
-        << "\t\\#b(blue)    -> " << "#b(blue)\n"_col
-        << "\t\\#c(cyan)    -> " << "#c(cyan)\n"_col
-        << "\t\\#m(magenta) -> " << "#m(magenta)\n"_col
-        << "\t\\#w(white)   -> " << "#w(white)\n\n"_col
+        << "\t #k(black)   -> " << "#k(black)\n"_col
+        << "\t #r(red)     -> " << "#r(red)\n"_col
+        << "\t #g(green)   -> " << "#g(green)\n"_col
+        << "\t #y(yellow)  -> " << "#y(yellow)\n"_col
+        << "\t #b(blue)    -> " << "#b(blue)\n"_col
+        << "\t #c(cyan)    -> " << "#c(cyan)\n"_col
+        << "\t #m(magenta) -> " << "#m(magenta)\n"_col
+        << "\t #w(white)   -> " << "#w(white)\n\n"_col
 
         << "\t#bk(bright_black)   -> " << "#bk(bright_black)\n"_col
         << "\t#br(bright_red)     -> " << "#br(bright_red)\n"_col
