@@ -17,7 +17,7 @@
 //
 
 #ifndef COLTEXT_HPP
-#define COLTEXT_HPP "1.0.1"
+#define COLTEXT_HPP "1.0.2"
 
 
 #include <iostream>
@@ -294,32 +294,51 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
     int num_wait_closing = 0;
     bool wait_next_word = false;
 
+    /* Function for this scope only to check
+       whether it's symbols we can escape */
+    auto is_escapable = [](char c)->bool {
+        switch (c) {
+        default: 
+            return false;
+
+        case '#':
+        case '<':
+        case '(':
+        case ')':
+            return true;
+        };
+    };
+
     std::string buffer = "";
     for (size_t i = 0; i < len; ++i)
-    {  
+    {
         char c = str[i];
-        if (c == '\\' && i + 1 < len && 
-            (str[i+1] == '(' || str[i+1] == ')' || str[i+1] == '#'))
-        { 
-        /* If parentheses are escaped,
-           push them without slash */
-            buffer.push_back(str[i+1]);
-            ++i;
+        if ((!is_escapable(c) && c != '\\' && c != ' ') || 
+             c == '(' ||
+            (c == ' ' && !wait_next_word) ||
+            (c == ')' && num_wait_closing == 0))
+        {// Some magic cases to get plain text
+            buffer.push_back(c);
             continue;
         }
-        else
-        if (c == '#' || c == '<')
-        {/* Coltext tags found */
-            
-            if (buffer.size() != 0) // Don't flush empty strings
-            {
-                tokens.push_back({ 
-                    Token::Type::text, 
-                    buffer
-                });
-                buffer.clear();
-            }
+        
+        if (c == '\\' && i + 1 < len && is_escapable(str[i+1]))
+        {// Put escaped symbols without slash
+            buffer.push_back(str[++i]);
+            continue;
+        }
 
+        if (buffer.size() > 0)
+        {// Don't flush empty strings
+            tokens.push_back({
+                Token::Type::text, 
+                std::move(buffer)
+            });
+            buffer.clear();
+        }
+
+        if (c == '#' || c == '<')
+        {// Coltext tags found
             do { buffer.push_back(str[i]); ++i; }
             while (
                 i < len && 
@@ -336,7 +355,7 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
 
             tokens.push_back({ 
                 Token::Type::effect, 
-                buffer
+                std::move(buffer)
             });
             buffer.clear();
 
@@ -344,59 +363,34 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
             continue;
         }
         else
-        if (num_wait_closing > 0 && c == ')')
         {
             --num_wait_closing;
 
-            if (buffer.size() != 0) // In case of #r()
+            tokens.push_back({ 
+                Token::Type::effect_stop, 
+                ")"
+            });
+
+            if (wait_next_word && c == ' ')
             {
-                tokens.push_back({ 
-                    Token::Type::text, 
-                    buffer
-                });
-                buffer.clear();
+                wait_next_word = false;
+                buffer.push_back(' ');
             }
 
-            tokens.push_back({ 
-                Token::Type::effect_stop, 
-                ")"
-            });
             continue;
         }
-        else
-        if (wait_next_word && c == ' ')
-        {
-            --num_wait_closing;
-
-            wait_next_word = false;
-            tokens.push_back({ 
-                Token::Type::text, 
-                buffer
-            });
-            buffer.clear();
-
-            tokens.push_back({ 
-                Token::Type::effect_stop, 
-                ")"
-            });
-
-            buffer.push_back(' ');
-            continue;
-        }
-        else buffer.push_back(c);
     }
 
     if (buffer.size() != 0)
-    {
+    {// Flush left text
         tokens.push_back({ 
             Token::Type::text, 
-            buffer
+            std::move(buffer)
         });
-        buffer.clear();
     }
     
     for (; num_wait_closing > 0; --num_wait_closing)
-    {
+    {// Silently close open effects
         tokens.push_back({ 
             Token::Type::effect_stop, 
             ")"
