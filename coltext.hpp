@@ -287,8 +287,8 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
 {
     std::list<Token> tokens;
     
+    int num_wait_closing = 0;
     bool wait_next_word = false;
-    int wait_right_parenthesis = 0;
 
     std::string buffer = "";
     for (size_t i = 0; i < len; ++i)
@@ -336,21 +336,13 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
             });
             buffer.clear();
 
-            if (i >= len)
-            {/* Silently close any open tags */ 
-                tokens.push_back({ 
-                    Token::Type::effect_stop, 
-                    ")"
-                });
-                break;
-            }
-            ++wait_right_parenthesis;
+            ++num_wait_closing;
             continue;
         }
         else
-        if (wait_right_parenthesis > 0 && c == ')')
+        if (num_wait_closing > 0 && c == ')')
         {
-            --wait_right_parenthesis;
+            --num_wait_closing;
 
             if (buffer.size() != 0) // In case of #r()
             {
@@ -370,6 +362,8 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
         else
         if (wait_next_word && c == ' ')
         {
+            --num_wait_closing;
+
             wait_next_word = false;
             tokens.push_back({ 
                 Token::Type::text, 
@@ -397,7 +391,7 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
         buffer.clear();
     }
     
-    if (wait_next_word) 
+    for (; num_wait_closing > 0; --num_wait_closing)
     {
         tokens.push_back({ 
             Token::Type::effect_stop, 
