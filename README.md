@@ -92,16 +92,24 @@ Widly supported styles:
 Closing styles by `<\>` is currently not supported in Coltext.
 See [effect scope](#effect-scope).
 
-Not widely supported or not frequently used styles:
+Not frequently used styles:
 
 |  style  |    keywords   |                commentary               |
 |---------|---------------|-----------------------------------------|
-|crossed  | `"crossed"`   | Strikethrough text                      |
+|crossed  | `"crossed"`   | Strikethrough text. May be not supported|
 |blink    | `"blink"`     | Text starts blinking (slowly)           |
 |reverse  | `"reverse"`   | Reverse background and foreground color |
-|framed   | `"framed"`    | Not widely supported                    |
-|encircled| `"encircled"` | Not widely supported                    |
-|overlined| `"overlined"` | Not widely supported                    |
+
+Usage of those is not so frequent, hence they have no acronym.
+
+Not widely supported styles:
+
+|      style     |       keywords       |
+|----------------|----------------------|
+|double underline| `"double_underline"` |
+|framed          | `"framed"`           |
+|encircled       | `"encircled"`        |
+|overlined       | `"overlined"`        |
 
 > Note: some of them will work in your terminal, some won't. Deal with it.
 

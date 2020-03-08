@@ -17,7 +17,7 @@
 //
 
 #ifndef COLTEXT_HPP
-#define COLTEXT_HPP "1.0.0"
+#define COLTEXT_HPP "1.0.2"
 
 
 #include <iostream>
@@ -42,9 +42,8 @@ public:
     inline Coltext(const std::string &);
     inline Coltext(const char *, size_t );
 
+    Coltext   operator+  (const Coltext &);
     Coltext & operator+= (const Coltext &);
-    
-    friend inline Coltext & operator+  (const Coltext &, const Coltext &);
 
     friend inline std::istream & operator>> (std::istream &, Coltext &);
     friend inline std::ostream & operator<< (std::ostream &, const Coltext &);
@@ -60,18 +59,8 @@ private:
         Type type;
         std::string value;
     };
-    std::list<Token> tokenize(const char *str, size_t len) const noexcept;
-
-    struct Node {
-        enum class Type {
-            text,
-            effect
-        };
-
-        Type type;
-        std::string value;
-    };
-    std::list<Node> parse(const std::list<Token> &tokens) const noexcept;
+    std::list<Token> tokenize(const char *str, size_t len) const noexcept; 
+    void apply_effects (std::list<Token> &tokens) const noexcept;
 
 
     std::string str;
@@ -180,12 +169,12 @@ std::unordered_map<Effect, Effect> effect_off = {
     {Effect::bold, Effect::normal_itensity}, {Effect::faint, Effect::normal_itensity},
      
     {Effect::underline, Effect::underline_off}, {Effect::double_underline, Effect::underline_off},
-    {Effect::framed, Effect::framed_off}, {Effect::encircled, Effect::framed_off},
+    {Effect::framed,    Effect::framed_off},    {Effect::encircled,        Effect::framed_off},
     
-    {Effect::italic, Effect::italic_off}, 
-    {Effect::blink, Effect::blink_off},
-    {Effect::reverse, Effect::reverse_off},
-    {Effect::crossed, Effect::crossed_off},
+    {Effect::italic,    Effect::italic_off}, 
+    {Effect::blink,     Effect::blink_off},
+    {Effect::reverse,   Effect::reverse_off},
+    {Effect::crossed,   Effect::crossed_off},
     {Effect::overlined, Effect::overlined_off}
 };
 
@@ -199,6 +188,8 @@ std::unordered_map<std::string, Effect> name_to_effect = {
     {"underline", Effect::underline}, {"<u>", Effect::underline},
     
 /* Not frequently used functions are without acronyms. */
+    {"double_underline", Effect::double_underline},
+
     {"crossed", Effect::crossed},
 
     {"blink",   Effect::blink}, 
@@ -255,41 +246,32 @@ inline Coltext::Coltext()
 {};
 
 inline Coltext::Coltext(const std::string &str) 
-{
-    this->str = str;
-    auto tokens = this->tokenize(str.c_str(), str.size());
-    auto nodes = this->parse(tokens);
-    for (const auto &node : nodes) this->colored_str += node.value;
-};
+: Coltext::Coltext(str.c_str(), str.size())
+{};
 
 inline Coltext::Coltext(const char *str, size_t len)
 {
     this->str = std::string(str, len);
     auto tokens = this->tokenize(str, len);
-    auto nodes = this->parse(tokens);
-    for (const auto &node : nodes) this->colored_str += node.value;
+    this->apply_effects(tokens);
+    for (const auto &tkn : tokens) this->colored_str += tkn.value;
+}
+
+Coltext Coltext::operator+ (const Coltext &rhs)
+{
+    return Coltext(this->str + rhs.str);
 }
 
 Coltext & Coltext::operator+= (const Coltext &rhs)
 {
-    this->str += rhs.str;
-    auto tokens = this->tokenize(this->str.c_str(), this->str.size());
-    auto nodes = this->parse(tokens);
-
-    this->colored_str = "";
-    for (const auto &node : nodes) this->colored_str += node.value;
-
-    return *this;
+    return *this = *this + rhs;
 }
 
 inline std::istream & operator>> (std::istream &is, Coltext &ctxt)
 {
     std::string str; std::getline(is, str);
 
-    ctxt.str = str;
-    auto tokens = ctxt.tokenize(str.c_str(), str.size());
-    auto nodes = ctxt.parse(tokens);
-    for (const auto &node : nodes) ctxt.colored_str += node.value;
+    ctxt = Coltext(str);
     
     return is;
 }
@@ -309,35 +291,54 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
 {
     std::list<Token> tokens;
     
+    int num_wait_closing = 0;
     bool wait_next_word = false;
-    int wait_right_parenthesis = 0;
+
+    /* Function for this scope only to check
+       whether it's symbols we can escape */
+    auto is_escapable = [](char c)->bool {
+        switch (c) {
+        default: 
+            return false;
+
+        case '#':
+        case '<':
+        case '(':
+        case ')':
+            return true;
+        };
+    };
 
     std::string buffer = "";
     for (size_t i = 0; i < len; ++i)
-    {  
+    {
         char c = str[i];
-        if (c == '\\' && i + 1 < len && 
-            (str[i+1] == '(' || str[i+1] == ')' || str[i+1] == '#'))
-        { 
-        /* If parentheses are escaped,
-           push them without slash */
-            buffer.push_back(str[i+1]);
-            ++i;
+        if ((!is_escapable(c) && c != '\\' && c != ' ') || 
+             c == '(' ||
+            (c == ' ' && !wait_next_word) ||
+            (c == ')' && num_wait_closing == 0))
+        {// Some magic cases to get plain text
+            buffer.push_back(c);
             continue;
         }
-        else
-        if (c == '#' || c == '<')
-        {/* Coltext tags found */
-            
-            if (buffer.size() != 0) // Don't flush empty strings
-            {
-                tokens.push_back({ 
-                    Token::Type::text, 
-                    buffer
-                });
-                buffer.clear();
-            }
+        
+        if (c == '\\' && i + 1 < len && is_escapable(str[i+1]))
+        {// Put escaped symbols without slash
+            buffer.push_back(str[++i]);
+            continue;
+        }
 
+        if (buffer.size() > 0)
+        {// Don't flush empty strings
+            tokens.push_back({
+                Token::Type::text, 
+                std::move(buffer)
+            });
+            buffer.clear();
+        }
+
+        if (c == '#' || c == '<')
+        {// Coltext tags found
             do { buffer.push_back(str[i]); ++i; }
             while (
                 i < len && 
@@ -354,73 +355,42 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
 
             tokens.push_back({ 
                 Token::Type::effect, 
-                buffer
+                std::move(buffer)
             });
             buffer.clear();
 
-            if (i >= len)
-            {/* Silently close any open tags */ 
-                tokens.push_back({ 
-                    Token::Type::effect_stop, 
-                    ")"
-                });
-                break;
-            }
-            ++wait_right_parenthesis;
+            ++num_wait_closing;
             continue;
         }
         else
-        if (wait_right_parenthesis > 0 && c == ')')
         {
-            --wait_right_parenthesis;
+            --num_wait_closing;
 
-            if (buffer.size() != 0) // In case of #r()
+            tokens.push_back({ 
+                Token::Type::effect_stop, 
+                ")"
+            });
+
+            if (wait_next_word && c == ' ')
             {
-                tokens.push_back({ 
-                    Token::Type::text, 
-                    buffer
-                });
-                buffer.clear();
+                wait_next_word = false;
+                buffer.push_back(' ');
             }
 
-            tokens.push_back({ 
-                Token::Type::effect_stop, 
-                ")"
-            });
             continue;
         }
-        else
-        if (wait_next_word && c == ' ')
-        {
-            wait_next_word = false;
-            tokens.push_back({ 
-                Token::Type::text, 
-                buffer
-            });
-            buffer.clear();
-
-            tokens.push_back({ 
-                Token::Type::effect_stop, 
-                ")"
-            });
-
-            buffer.push_back(' ');
-            continue;
-        }
-        else buffer.push_back(c);
     }
 
     if (buffer.size() != 0)
-    {
+    {// Flush left text
         tokens.push_back({ 
             Token::Type::text, 
-            buffer
+            std::move(buffer)
         });
-        buffer.clear();
     }
     
-    if (wait_next_word) 
-    {
+    for (; num_wait_closing > 0; --num_wait_closing)
+    {// Silently close open effects
         tokens.push_back({ 
             Token::Type::effect_stop, 
             ")"
@@ -430,33 +400,27 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
     return tokens;
 }
 
-std::list<Coltext::Node> 
-Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
+void
+Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
 {
     using namespace ansi;
 
-    std::list<Node> nodes;
     std::stack<Effect> effects;
 
     std::stack<Effect> last_bg({Effect::default_bg});
     std::stack<Effect> last_fg({Effect::default_fg});
 
     bool ignore_stop = false;
-    for (const auto &tkn : tokens)
+
+    auto tkn = tokens.begin();
+    while (tkn != tokens.end())
     {
-        if (tkn.type == Token::Type::text)
-        {
-            nodes.push_back({
-                Node::Type::text, 
-                tkn.value
-            });
-            continue;
-        }
+        if (tkn->type == Token::Type::text) { ++tkn; continue; }
         
         Effect e;
-        if (tkn.type == Token::Type::effect)
+        if (tkn->type == Token::Type::effect)
         {
-            std::string name = tkn.value;
+            std::string name = tkn->value;
             name.pop_back(); // Delete ' ' or '('
 
             if (name.at(0) == '#') name.erase(0, 1);
@@ -466,14 +430,13 @@ Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
             {
             /* If it's not a valid effect, 
                 we just leave it as text */
-                nodes.push_back({
-                    Node::Type::text, 
-                    tkn.value
-                });
+                tkn->type = Token::Type::text;
                 ignore_stop = true; 
-                continue;
+                ++tkn; continue;
             }
-            else e = it->second;  
+            else e = it->second;
+
+            tkn->value = name;
 
             effects.push(e);
             if ((e >= Effect::black_bg && e <= Effect::white_bg) ||
@@ -489,10 +452,11 @@ Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
             } 
         }
         else 
-        if (tkn.type == Token::Type::effect_stop)
+        if (tkn->type == Token::Type::effect_stop)
         {
             if (ignore_stop)
             {
+                tokens.erase(tkn++);
                 ignore_stop = false;
                 continue;
             }
@@ -519,12 +483,9 @@ Coltext::parse (const std::list<Coltext::Token> &tokens) const noexcept
         // Create ANSI escape code from effect enum
         std::string escape_code = "\033[" + std::to_string((int)e) + "m";
 
-        nodes.push_back({
-            Node::Type::effect, 
-            escape_code
-        });
+        tkn->value = escape_code;
+        ++tkn; continue;
     }
-    return nodes;
 }
 
 #endif // COLTEXT_HPP
