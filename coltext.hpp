@@ -17,10 +17,11 @@
 //
 
 #ifndef COLTEXT_HPP
-#define COLTEXT_HPP "1.0.2"
+#define COLTEXT_HPP "1.0.3"
 
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include <list>
@@ -237,7 +238,7 @@ std::unordered_map<std::string, Effect> name_to_effect = {
     {"bright_White",   Effect::bright_white_bg},   {"bW", Effect::bright_white_bg}
 };
 
-} // inline namespace ansi
+} // namespace ansi
 
 
 inline Coltext::Coltext() 
@@ -254,7 +255,10 @@ inline Coltext::Coltext(const char *str, size_t len)
     this->str = std::string(str, len);
     auto tokens = this->tokenize(str, len);
     this->apply_effects(tokens);
-    for (const auto &tkn : tokens) this->colored_str += tkn.value;
+
+    std::stringstream ss;
+    for (const auto &tkn : tokens) ss << tkn.value;
+    this->colored_str = ss.str();
 }
 
 Coltext Coltext::operator+ (const Coltext &rhs)
