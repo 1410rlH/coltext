@@ -14,7 +14,8 @@ It introduces a new syntax for in-string ANSI effects (styles, background and fo
       - [Linux](#linux)
   - [How to use](#how-to-use)
     - [Syntax](#syntax)
-      - [Colors](#colors)
+      - [4bit Colors](#4bit-colors)
+      - [24bit Colors](#24bit-colors)
       - [Styles](#styles)
       - [Effect scope](#effect-scope)
       - [Escape symbol](#escape-symbol)
@@ -51,9 +52,9 @@ Effects should start from a `#` special symbol, followed by effect's keyword.
 
 > Note: if keyword is wrong then Coltext threats it as plain text. **NO ERROR TROWN EVER**.
 
-#### Colors
+#### 4bit Colors
 
-The colors are standard 16 ANSI colors (8 colors + their bright versions).
+These colors are standard 4bit ANSI colors (8 normal colors + 8 bright).
 How colors look (and whether they are supported) is up to your terminal specification and settings.
 
 | color |      keywords      |
@@ -74,7 +75,19 @@ Their bright versions are accessed by adding `"bright_"` to long keyword or `"b"
 
 > Note: acronyms for colors come from [CMYK](https://en.wikipedia.org/wiki/CMYK_color_model) and [RGB](https://en.wikipedia.org/wiki/RGB_color_model) color models.
 
-CSS-like coloring (`#ffffff`) is currently not supported by Coltext.
+#### 24bit Colors
+
+If your terminal supports 24bit coloring, you can specify color by these:
+
+- `#rgb[r;g;b]` for foreground colors
+
+Or
+
+- `#RGB[r;g;b]` for background colors.
+
+*Where `r`, `g` and `b` are numbers in range `[0, 255]`.*
+
+> Note: you can **NOT** add spaces nor change delimiter between `[]`.
 
 #### Styles
 
