@@ -17,7 +17,7 @@
 //
 
 #ifndef COLTEXT_HPP
-#define COLTEXT_HPP "1.0.3"
+#define COLTEXT_HPP "1.1.0"
 
 
 #include <iostream>
@@ -176,7 +176,11 @@ std::unordered_map<Effect, Effect> effect_off = {
     {Effect::blink,     Effect::blink_off},
     {Effect::reverse,   Effect::reverse_off},
     {Effect::crossed,   Effect::crossed_off},
-    {Effect::overlined, Effect::overlined_off}
+    {Effect::overlined, Effect::overlined_off},
+
+/* TODO: calcel RGB to last used color. */
+    {Effect::rgb_fg, Effect::default_fg},
+    {Effect::rgb_bg, Effect::default_bg}
 };
 
 /* Map of supported effect acronyms. Format: "#name:" or "#name(". */
@@ -198,7 +202,11 @@ std::unordered_map<std::string, Effect> name_to_effect = {
 
     {"framed",    Effect::framed}, 
     {"encircled", Effect::encircled},
-    {"overlined", Effect::overlined}, 
+    {"overlined", Effect::overlined},
+
+/* RGB 24 bit coloring */
+    {"rgb", Effect::rgb_fg},
+    {"RGB", Effect::rgb_bg},
 
 /* RGB and CMYK used as acronyms for colors */
     {"black",   Effect::black_fg},   {"k", Effect::black_fg},
@@ -421,13 +429,29 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
     {
         if (tkn->type == Token::Type::text) { ++tkn; continue; }
         
-        Effect e;
+        Effect e; 
+        std::string rgb;
         if (tkn->type == Token::Type::effect)
         {
             std::string name = tkn->value;
-            name.pop_back(); // Delete ' ' or '('
 
+            name.pop_back(); // Delete ' ' or '('
             if (name.at(0) == '#') name.erase(0, 1);
+
+            if (name.size() >= 10 && 
+                name[3] == '[' && name.back() == ']')  
+            {// If has [] sequence and enough symbols
+                std::string prefix = name.substr(0, 3);
+                if (prefix == "rgb" || prefix == "RGB")
+                {
+                    // Get from '[' to ']' exclusive
+                    rgb = name.substr(4, name.size() - 5);
+
+                    //TODO: check validity
+
+                    name = prefix;
+                }
+            }
 
             auto it = ansi::name_to_effect.find(name);
             if (it == ansi::name_to_effect.end())
@@ -453,7 +477,7 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
                 (e >= Effect::bright_black_fg && e <= Effect::bright_white_fg))
             {
                 last_fg.push(e);
-            } 
+            }
         }
         else 
         if (tkn->type == Token::Type::effect_stop)
@@ -485,7 +509,10 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
         }
 
         // Create ANSI escape code from effect enum
-        std::string escape_code = "\033[" + std::to_string((int)e) + "m";
+        std::string escape_code = "\033[" + std::to_string((int)e);
+        if (e == Effect::rgb_fg || e == Effect::rgb_bg)
+            escape_code += ";2;" + rgb;
+        escape_code.push_back('m');
 
         tkn->value = escape_code;
         ++tkn; continue;

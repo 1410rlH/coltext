@@ -198,6 +198,21 @@ void all_colors()
         << "\t#bW( ) -> " << "#bW( )\n\n"_col;
 }
 
+void rgb() 
+{
+    std::cout << "Starting rgb test:\n";
+
+    std::string msg1 = "#rgb[0;255;255] next_word_rgb and other text";
+    std::string msg2 = "#RGB[128;128;0](background by RGB in parentheses) and other text";
+
+    std::cout << "\t"  << msg1 << "\n";
+    std::cout << "\t"  << (Coltext) msg1 << "\n\n";
+    std::cout << "\t"  << msg2 << "\n";
+    std::cout << "\t"  << (Coltext) msg2 << "\n";
+
+    std::cout << "[ #g OK ] Test rgb succeded\n\n"_col; 
+}
+
 } // namespace test
 
 int main(int argc, char const *argv[])
@@ -220,6 +235,8 @@ int main(int argc, char const *argv[])
     test::sequence();              // Do sequences work ?
 
     test::all_colors();
+
+    test::rgb();                   // Do #rgb and #RGB work ?
 
     test::get_from_cin();          // Does operator>> work ?
     return 0;
