@@ -17,7 +17,7 @@
 //
 
 #ifndef COLTEXT_HPP
-#define COLTEXT_HPP "1.1.0"
+#define COLTEXT_HPP "1.1.1"
 
 
 #include <iostream>
@@ -164,6 +164,11 @@ enum class Effect {
     bright_white_bg   = 107
 };
 
+inline std::string to_code(Effect e)
+{
+    return std::to_string((int)e);
+} 
+
 /* Map of opposit effects. Colors can not be canceled like this.*/
 const
 std::unordered_map<Effect, Effect> effect_off = {
@@ -177,10 +182,6 @@ std::unordered_map<Effect, Effect> effect_off = {
     {Effect::reverse,   Effect::reverse_off},
     {Effect::crossed,   Effect::crossed_off},
     {Effect::overlined, Effect::overlined_off},
-
-/* TODO: calcel RGB to last used color. */
-    {Effect::rgb_fg, Effect::default_fg},
-    {Effect::rgb_bg, Effect::default_bg}
 };
 
 /* Map of supported effect acronyms. Format: "#name:" or "#name(". */
@@ -419,8 +420,8 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
 
     std::stack<Effect> effects;
 
-    std::stack<Effect> last_bg({Effect::default_bg});
-    std::stack<Effect> last_fg({Effect::default_fg});
+    std::stack<std::string> last_bg({to_code(Effect::default_bg)});
+    std::stack<std::string> last_fg({to_code(Effect::default_fg)});
 
     bool ignore_stop = false;
 
@@ -429,8 +430,7 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
     {
         if (tkn->type == Token::Type::text) { ++tkn; continue; }
         
-        Effect e; 
-        std::string rgb;
+        Effect e; std::string effect_code;
         if (tkn->type == Token::Type::effect)
         {
             std::string name = tkn->value;
@@ -438,18 +438,27 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
             name.pop_back(); // Delete ' ' or '('
             if (name.at(0) == '#') name.erase(0, 1);
 
+            std::string rgb;
             if (name.size() >= 10 && 
                 name[3] == '[' && name.back() == ']')  
             {// If has [] sequence and enough symbols
                 std::string prefix = name.substr(0, 3);
                 if (prefix == "rgb" || prefix == "RGB")
                 {
-                    // Get from '[' to ']' exclusive
-                    rgb = name.substr(4, name.size() - 5);
+                    // Get from '[' to ']' exclusive 
+                    rgb = name.substr(4, name.size() - 5); 
 
-                    //TODO: check validity
+                    bool valid = true;
+                    for (const auto &c : rgb)
+                    {
+                        if (!('0' <= c && c <= '9') && c != ';')
+                        {
+                            valid = false;
+                            break;
+                        }
+                    }
 
-                    name = prefix;
+                    if (valid) name = prefix;
                 }
             }
 
@@ -467,16 +476,23 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
             tkn->value = name;
 
             effects.push(e);
-            if ((e >= Effect::black_bg && e <= Effect::white_bg) ||
+            effect_code = to_code(e);
+            if (e == Effect::rgb_bg || e == Effect::rgb_fg)
+                effect_code += ";2;" + rgb;
+            
+
+            if ((e == Effect::rgb_bg) ||
+                (e >= Effect::black_bg && e <= Effect::white_bg) ||
                 (e >= Effect::bright_black_bg && e <= Effect::bright_white_bg))
             {
-                last_bg.push(e);
+                last_bg.push(effect_code);
             }
             else
-            if ((e >= Effect::black_fg && e <= Effect::white_fg) ||
+            if ((e == Effect::rgb_fg) ||
+                (e >= Effect::black_fg && e <= Effect::white_fg) ||
                 (e >= Effect::bright_black_fg && e <= Effect::bright_white_fg))
             {
-                last_fg.push(e);
+                last_fg.push(effect_code);
             }
         }
         else 
@@ -492,29 +508,30 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
             e = effects.top();
             effects.pop();
             
-            if ((e >= Effect::black_bg && e <= Effect::white_bg) ||
+            if ((e == Effect::rgb_bg) ||
+                (e >= Effect::black_bg && e <= Effect::white_bg) ||
                 (e >= Effect::bright_black_bg && e <= Effect::bright_white_bg))
             {
                 last_bg.pop();
-                e = last_bg.top();
+                effect_code = last_bg.top();
             }
             else
-            if ((e >= Effect::black_fg && e <= Effect::white_fg) ||
+            if ((e == Effect::rgb_fg) ||
+                (e >= Effect::black_fg && e <= Effect::white_fg) ||
                 (e >= Effect::bright_black_fg && e <= Effect::bright_white_fg))
             {
                 last_fg.pop();
-                e = last_fg.top();
+                effect_code = last_fg.top();
             } 
-            else e = effect_off.at(e);
+            else
+            {
+                e = effect_off.at(e);
+                effect_code = to_code(e);
+            }
         }
 
-        // Create ANSI escape code from effect enum
-        std::string escape_code = "\033[" + std::to_string((int)e);
-        if (e == Effect::rgb_fg || e == Effect::rgb_bg)
-            escape_code += ";2;" + rgb;
-        escape_code.push_back('m');
-
-        tkn->value = escape_code;
+        // Create ANSI escape code from effect code
+        tkn->value = "\033[" + effect_code + "m";
         ++tkn; continue;
     }
 }
