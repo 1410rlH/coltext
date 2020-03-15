@@ -8,8 +8,7 @@ It introduces a new syntax for in-string ANSI effects (styles, background and fo
   - [Prerequisites](#prerequisites)
   - [Installing](#installing)
     - [Windows](#windows)
-    - [Linux](#linux)
-    - [MacOs](#macos)
+    - [Linux and MacOS](#linux-and-macos)
 - [How to use](#how-to-use)
   - [Syntax](#syntax)
     - [4bit Colors](#4bit-colors)
@@ -36,14 +35,7 @@ The only things you need to use Coltext is C++ compiler and terminal that suppor
 
 Currently not supported.
 
-#### Linux
-
-1. Download [latest release](https://github.com/1410rlH/coltext/releases/latest) or just `coltext.hpp` file.
-2. Add it to the folder where your code lies.
-3. Add `#include "coltext.hpp"` to your C++ file.
-4. Compile with `-std=c++17`.
-
-#### MacOs
+#### Linux and MacOS
 
 1. Download [latest release](https://github.com/1410rlH/coltext/releases/latest) or just `coltext.hpp` file.
 2. Add it to the folder where your code lies.
