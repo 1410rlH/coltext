@@ -17,7 +17,7 @@
 //
 
 #ifndef COLTEXT_HPP
-#define COLTEXT_HPP "1.1.0"
+#define COLTEXT_HPP "1.1.1"
 
 
 #include <iostream>
