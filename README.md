@@ -6,25 +6,25 @@ It introduces a new syntax for in-string ANSI effects (styles, background and fo
 
 ## Table of Contents
 
-- [Coltext](#coltext)
-  - [Table of Contents](#table-of-contents)
-  - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Installing](#installing)
-      - [Linux](#linux)
-  - [How to use](#how-to-use)
-    - [Syntax](#syntax)
-      - [4bit Colors](#4bit-colors)
-      - [24bit Colors](#24bit-colors)
-      - [Styles](#styles)
-      - [Effect scope](#effect-scope)
-      - [Escape symbol](#escape-symbol)
-    - [Casting](#casting)
-  - [Running the tests](#running-the-tests)
-  - [Versioning](#versioning)
-  - [Authors](#authors)
-  - [License](#license)
-  - [Acknowledgments](#acknowledgments)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installing](#installing)
+    - [Windows](#windows)
+    - [Linux](#linux)
+    - [MacOs](#macos)
+- [How to use](#how-to-use)
+  - [Syntax](#syntax)
+    - [4bit Colors](#4bit-colors)
+    - [24bit Colors](#24bit-colors)
+    - [Styles](#styles)
+    - [Effect scope](#effect-scope)
+    - [Escape symbol](#escape-symbol)
+  - [Casting](#casting)
+- [Running the tests](#running-the-tests)
+- [Versioning](#versioning)
+- [Authors](#authors)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ## Getting Started
 
@@ -34,13 +34,23 @@ The only things you need to use Coltext is C++ compiler and terminal that suppor
 
 ### Installing
 
-There is currently only Linux terminals support. But we plan to make Coltext cross-platform.
+#### Windows
+
+Currently not supported.
 
 #### Linux
 
 1. Download [latest release](https://github.com/1410rlH/coltext/releases/latest) or just `coltext.hpp` file.
 2. Add it to the folder where your code lies.
 3. Add `#include "coltext.hpp"` to your C++ file.
+4. Compile with `-std=c++17`.
+
+#### MacOs
+
+1. Download [latest release](https://github.com/1410rlH/coltext/releases/latest) or just `coltext.hpp` file.
+2. Add it to the folder where your code lies.
+3. Add `#include "coltext.hpp"` to your C++ file.
+4. Compile with `-std=c++17`.
 
 ## How to use
 
