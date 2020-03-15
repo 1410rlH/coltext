@@ -447,9 +447,17 @@ Coltext::apply_effects (std::list<Coltext::Token> &tokens) const noexcept
                     // Get from '[' to ']' exclusive
                     rgb = name.substr(4, name.size() - 5);
 
-                    //TODO: check validity
+                    bool valid = true;
+                    for (const auto &c : rgb)
+                    {
+                        if (!('0' <= c && c <= '9') && c != ';')
+                        {
+                            valid = false;
+                            break;
+                        }
+                    }
 
-                    name = prefix;
+                    if (valid) name = prefix;
                 }
             }
 
