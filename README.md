@@ -1,10 +1,8 @@
-# Coltext
-
 [Coltext](https://github.com/1410rlH/coltext) is an open-source header-only C++ library for applying colors and styles to strings in terminals.
 
 It introduces a new syntax for in-string ANSI effects (styles, background and foreground colors) parsing. With a few simple rules you won't need to care about remembering escape codes or resetting streams!
 
-## Table of Contents
+# Table of Contents
 
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
