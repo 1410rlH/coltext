@@ -42,6 +42,9 @@ public:
     inline Coltext();
     inline Coltext(const std::string &);
 
+    Coltext   operator+  (const std::string &);
+    Coltext & operator+= (const std::string &);
+
     Coltext   operator+  (const Coltext &);
     Coltext & operator+= (const Coltext &);
 
@@ -263,6 +266,16 @@ inline Coltext::Coltext(const std::string &str)
     std::stringstream ss;
     for (const auto &tkn : tokens) ss << tkn.value;
     this->colored_str = ss.str();
+}
+
+Coltext Coltext::operator+ (const std::string &rhs)
+{
+    return Coltext(this->str + rhs);
+}
+
+Coltext & Coltext::operator+= (const std::string &rhs)
+{
+    return *this = *this + rhs;
 }
 
 Coltext Coltext::operator+ (const Coltext &rhs)
