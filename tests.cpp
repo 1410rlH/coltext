@@ -213,6 +213,34 @@ void rgb()
     std::cout << "[ #g OK ] Test rgb succeded\n\n"_col; 
 }
 
+void concatenation()
+{
+        std::cout << "Starting concatenation test:\n";
+
+        std::string msg1 = "#m(First colored str)";
+        std::string msg2 = "Second #c colored str";
+
+        std::cout << "\t"  << msg1 << "\n";
+        std::cout << "\t"  << msg2 << "\n\n";
+
+        Coltext ctxt1(msg1), ctxt2(msg2);
+
+        std::cout << "Coltext + Coltext:\n\t";
+        std::cout << ctxt1 + ctxt2 << "\n";
+        
+        std::cout << "Coltext + str:\n\t";
+        std::cout << ctxt1 + msg2 << "\n";
+        
+        std::cout << "Coltext += Coltext:\n\t";
+        std::cout << (ctxt1 += ctxt2) << "\n";
+
+        Coltext new_ctxt1(msg1);
+        std::cout << "Coltext += str:\n\t";
+        std::cout << (new_ctxt1 += msg2) << "\n";
+
+        std::cout << "[ #g OK ] Test concatenation succeded\n\n"_col; 
+}
+
 } // namespace test
 
 int main(int argc, char const *argv[])
@@ -237,6 +265,8 @@ int main(int argc, char const *argv[])
     test::all_colors();
 
     test::rgb();                   // Do #rgb and #RGB work ?
+
+    test::concatenation();         // Does concatenation work ?
 
     test::get_from_cin();          // Does operator>> work ?
     return 0;
