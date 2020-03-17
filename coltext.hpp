@@ -17,7 +17,7 @@
 //
 
 #ifndef COLTEXT_HPP
-#define COLTEXT_HPP "1.1.1"
+#define COLTEXT_HPP "2.0.0"
 
 
 #include <iostream>
@@ -41,7 +41,6 @@ class Coltext {
 public:
     inline Coltext();
     inline Coltext(const std::string &);
-    inline Coltext(const char *, size_t );
 
     Coltext   operator+  (const Coltext &);
     Coltext & operator+= (const Coltext &);
@@ -60,7 +59,7 @@ private:
         Type type;
         std::string value;
     };
-    std::list<Token> tokenize(const char *str, size_t len) const noexcept; 
+    std::list<Token> tokenize() const noexcept; 
     void apply_effects (std::list<Token> &tokens) const noexcept;
 
 
@@ -256,13 +255,9 @@ inline Coltext::Coltext()
 {};
 
 inline Coltext::Coltext(const std::string &str) 
-: Coltext::Coltext(str.c_str(), str.size())
-{};
-
-inline Coltext::Coltext(const char *str, size_t len)
 {
-    this->str = std::string(str, len);
-    auto tokens = this->tokenize(str, len);
+    this->str = str;
+    auto tokens = this->tokenize();
     this->apply_effects(tokens);
 
     std::stringstream ss;
@@ -296,11 +291,11 @@ inline std::ostream & operator<< (std::ostream &os, const Coltext &ctxt)
 
 Coltext literals::operator"" _col(const char *str, size_t len)
 {
-    return Coltext(str, len);
+    return Coltext(std::string(str, len));
 }
 
 std::list<Coltext::Token> 
-Coltext::tokenize (const char *str, size_t len) const noexcept
+Coltext::tokenize() const noexcept
 {
     std::list<Token> tokens;
     
@@ -323,9 +318,10 @@ Coltext::tokenize (const char *str, size_t len) const noexcept
     };
 
     std::string buffer = "";
+    size_t len = this->str.size();
     for (size_t i = 0; i < len; ++i)
     {
-        char c = str[i];
+        char c = this->str[i];
         if ((!is_escapable(c) && c != '\\' && c != ' ') || 
              c == '(' ||
             (c == ' ' && !wait_next_word) ||
