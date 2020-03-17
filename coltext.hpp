@@ -285,7 +285,10 @@ Coltext Coltext::operator+ (const Coltext &rhs)
 
 Coltext & Coltext::operator+= (const Coltext &rhs)
 {
-    return *this = *this + rhs;
+    this->str += rhs.str;
+    // No new keywords will appear after concatenation
+    this->colored_str += rhs.colored_str;
+    return *this;
 }
 
 inline std::istream & operator>> (std::istream &is, Coltext &ctxt)
